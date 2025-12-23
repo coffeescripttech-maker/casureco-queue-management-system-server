@@ -64,6 +64,20 @@ function initializeSocketIO(io) {
       }
     });
 
+    // Handle replay announcement request from staff
+    socket.on('replay:announcement', (data) => {
+      const { ticket_number, counter_name, branch_id } = data;
+      console.log(`🔊 Replay announcement request: ${ticket_number} at ${counter_name}`);
+      
+      // Broadcast to all display screens in the branch
+      io.to(`branch:${branch_id}`).emit('announcement:replay', {
+        ticket_number,
+        counter_name
+      });
+      
+      console.log(`📤 Emitted announcement:replay to branch ${branch_id}`);
+    });
+
     // Heartbeat for connection monitoring
     socket.on('ping', () => {
       socket.emit('pong', { timestamp: Date.now() });

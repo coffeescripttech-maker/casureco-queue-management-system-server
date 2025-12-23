@@ -149,6 +149,7 @@ router.get('/system', optionalAuth, async (req, res) => {
           display_refresh_interval: 5,
           show_wait_times: true,
           language: 'en',
+          default_ticker_message: 'Welcome to CASURECO II Queue Management System • Please wait for your number to be called • Thank you for your patience',
           monday_open: '08:00',
           monday_close: '17:00',
           tuesday_open: '08:00',
@@ -232,6 +233,12 @@ router.post('/system', authenticateToken, requireRole('admin'), async (req, res)
         `INSERT INTO system_settings (id, setting_key, setting_value, description) VALUES (?, ?, ?, ?)`,
         [id, 'system_config', JSON.stringify(settingsToStore), 'System configuration settings']
       );
+    }
+    
+    // Emit Socket.IO event to notify all clients about settings update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('settings:updated', { settings });
     }
     
     res.json({ success: true, message: 'Settings saved successfully' });
